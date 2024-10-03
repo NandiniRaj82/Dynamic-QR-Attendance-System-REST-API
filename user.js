@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
-const express = require("express");
-const app = express();
+
 const PORT = 8000;
 
 const userschema = new mongoose.Schema({
@@ -36,13 +35,6 @@ const librarytiming = new mongoose.Schema({
     checkin:{type: Date, required: true},
     checkout:{type: Date, required: true},
 })
-
- 
-
-app.use(express.json());
-
-
-
 
 const User = mongoose.model("user",userschema);
 const admin = mongoose.model("admin",adminschema);
@@ -100,5 +92,4 @@ app.post("/add-", async (req, res) => {
     }
   });
   
-app.listen(PORT, () => console.log("server started"));
 
