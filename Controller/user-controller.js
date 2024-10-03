@@ -1,10 +1,12 @@
-
-const {StudentModel,ProfessorsModel, OtherUsersModel} = require("../Models/user-model");
-const {CoursesModel, LabDataModel, LibraryModel, QRDataModel} = require("../Models/data-model");
 const uuid = require('uuid');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+
+const {StudentModel,ProfessorsModel, OtherUsersModel} = require("../Models/users-model");
+const {CoursesModel,ClassSchedulesModel , LabDataModel, LibraryModel, QRDataModel} = require("../Models/data-model");
+const {CoursesAttendanceModel} = require("../Models/attendance-model");
+
 
 const generateToken = (user) => {
   const token = jwt.sign({userId: user._id, fullName: user.fullName, email: user.email}, "SWE_SECRET_KEY", { expiresIn: '28d' });
@@ -43,10 +45,11 @@ exports.generateQRCode = async(req, res) => {
           await qrData.save();
       }
 
-      const QR_Code_Generation_URL = 'http://192.168.179.121:8000/generateQrCode';
+      const QR_Code_Generation_URL = 'http://192.168.6.121:8000/generateQrCode';
       const postData = {
           "id": uniqueId,
           "sessionId": sessionId,
+          "courseId":  classData.courseId,
           "className": classData.className,
           "duration": classData.duration,
           "startTime": classData.startTime,
@@ -162,6 +165,26 @@ exports.login = async (req, res) => {
     res.status(500).send({ message: 'Internal server error' });
   }
 };
+
+exports.addCourse = async(req,res) => {
+  try {
+      const newCourse = new CoursesModel(req.body);
+      await newCourse.save();
+      res.status(201).send("Course Saved successfully!");
+    } catch (error) {
+      res.status(400).send("Error saving course: " + error.message);
+    }
+}
+
+exports.addClass = async(req,res) => {
+  try {
+      const newCourse = new CoursesModel(req.body);
+      await newCourse.save();
+      res.status(201).send("Course Saved successfully!");
+    } catch (error) {
+      res.status(400).send("Error saving course: " + error.message);
+    }
+}
 
 exports.LabActivity = async(req,res) => {
     try {

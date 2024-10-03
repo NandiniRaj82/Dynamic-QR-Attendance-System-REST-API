@@ -1,12 +1,17 @@
-const { json } = require("express");
-const db = require("../Config/db.js")
 const mongoose = require("mongoose");
 
-const courseDetails = new mongoose.Schema({
+const courseSchema = new mongoose.Schema({
     courseId: {
-        type: String,
+        type: Number,
         required: true,
         unique: true
+    },
+    batch: {
+        type: Number,
+    },
+    courseCode: {
+        type: String,
+        required: true,
     },
     courseName: {
         type: String,
@@ -14,6 +19,27 @@ const courseDetails = new mongoose.Schema({
         unique: true
     }
 });
+
+const classScheduleSchema = new mongoose.Schema({
+    courseId: {
+        type: Number,
+        ref:  "Course",
+        required: true
+    },
+    scheduledDate: {
+        type: Date,
+        required: true
+    },
+    duration: {
+        type: Number,
+        default: 60
+    },
+    classTopic: {
+        type: String,
+        default: "Topic Not Specified"
+    }
+});
+
 
 const qrSessionData = new mongoose.Schema({
     qrCodeId: {
@@ -74,14 +100,17 @@ const libraryTiming = new mongoose.Schema({
     },
 });
 
-const CoursesModel=  mongoose.model('Courses', courseDetails);
-const LabDataModel= mongoose.model('LabData', labTiming);
-const LibraryModel= mongoose.model('LibraryData', libraryTiming);
-const QRDataModel= mongoose.model('QRSessionData', qrSessionData);
+const CoursesModel=  mongoose.model('Courses', courseSchema);
+const ClassSchedulesModel=  mongoose.model('Class Schedules', classScheduleSchema);
+const QRDataModel= mongoose.model('QR Session Data', qrSessionData);
+
+const LabDataModel= mongoose.model('Lab Data', labTiming); 
+const LibraryModel= mongoose.model('Library Data', libraryTiming); 
 
 module.exports = {
     CoursesModel,
+    ClassSchedulesModel,
+    QRDataModel,
     LabDataModel,
-    LibraryModel,
-    QRDataModel
+    LibraryModel
 }
