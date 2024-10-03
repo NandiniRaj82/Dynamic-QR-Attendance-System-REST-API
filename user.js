@@ -42,10 +42,6 @@ const librarytiming = new mongoose.Schema({
 app.use(express.json());
 
 
-mongoose.connect("mongodb://localhost:27017/Users")
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.log("MONGO Err"))
-
 
 
 const User = mongoose.model("user",userschema);
@@ -54,7 +50,7 @@ const course = mongoose.model("course",coursedetails);
 const lab = mongoose.model("lab",labtiming);
 const library = mongoose.model("library",librarytiming);
 
-app.post("/add-user", async (req, res) => {
+app.post("/add-", async (req, res) => {
     try {
       const newUser = new User(req.body);
       await newUser.save();
