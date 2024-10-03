@@ -1,10 +1,10 @@
 
-const {studentModel, adminModel} = require("../Models/user-model")
+const {User,admin} = require("../Models/user-model")
 
 
 exports.StudentSignup = async(req,res)=>{
     try {
-        const newUser = new studentModel(req.body);
+        const newUser = new User(req.body);
         console.log(req.body);
         await newUser.save();
         res.status(201).send("User created successfully!");
