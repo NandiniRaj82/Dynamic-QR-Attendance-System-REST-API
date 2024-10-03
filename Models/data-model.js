@@ -54,8 +54,12 @@ const libraryTiming = new mongoose.Schema({
     },
 })
 
+const CoursesModel=  mongoose.model('Courses', courseDetails);
+const LabDataModel= mongoose.model('LabData', labTiming);
+const LibraryModel= mongoose.model('LibraryModel', libraryTiming);
+
 module.exports = {
-    CoursesModel:  mongoose.model('Courses', coursename),
-    LabDataModel: mongoose.model('LabData', coursename),
-    LibraryModel: mongoose.model('LibraryModel', coursename),
+    CoursesModel,
+    LabDataModel,
+    LibraryModel
 }

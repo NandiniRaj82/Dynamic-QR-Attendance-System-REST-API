@@ -1,6 +1,6 @@
 
 const {StudentModel,AdminModel} = require("../Models/user-model")
-
+const {CoursesModel, LabDataModel, LibraryModel} = require("../Models/data-model")
 
 exports.StudentSignup = async(req,res)=>{
     try {
@@ -25,7 +25,7 @@ exports.AdminSignup = async(req,res)=>{
 
 exports.CourseDetails = async(req,res)=>{
     try {
-        const newCourse = new Course(req.body);
+        const newCourse = new CoursesModel(req.body);
         await newCourse.save();
         res.status(201).send("Course created successfully!");
       } catch (error) {
@@ -35,7 +35,7 @@ exports.CourseDetails = async(req,res)=>{
 
 exports.LabTiming = async(req,res)=>{
     try {
-        const newLabTiming = new Lab(req.body);
+        const newLabTiming = new LabDataModel(req.body);
         await newLabTiming.save();
         res.status(201).send("Lab timing recorded successfully!");
       } catch (error) {
@@ -45,7 +45,7 @@ exports.LabTiming = async(req,res)=>{
 
 exports.LibraryTiming = async(req,res)=>{
     try {
-        const newLibraryTiming = new Library(req.body);
+        const newLibraryTiming = new LibraryModel(req.body);
         await newLibraryTiming.save();
         res.status(201).send("Library timing recorded successfully!");
       } catch (error) {
