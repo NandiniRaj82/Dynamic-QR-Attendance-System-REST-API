@@ -2,12 +2,12 @@ const db = require("../Config/db.js")
 const mongoose = require("mongoose");
 
 const courseDetails = new mongoose.Schema({
-    courseid: {
+    courseId: {
         type: String,
         required: true,
         unique: true
     },
-    coursename: {
+    courseName: {
         type: String,
         required: true,
         unique: true
@@ -24,13 +24,15 @@ const labTiming = new mongoose.Schema({
         required: true,
         unique: true
     },
-    checkin: {
+    checkIn: {
         type: Date,
-        required: true
+        required: true,
+        default:  Date.now()
     },
-    checkout: {
+    checkOut: {
         type: Date,
-        required: true
+        required: true,
+        default:  Date.now()
     },
 });
 
@@ -44,11 +46,11 @@ const libraryTiming = new mongoose.Schema({
         required: true,
         unique: true
     },
-    checkin: {
+    checkIn: {
         type: Date,
         required: true
     },
-    checkout: {
+    checkOut: {
         type: Date,
         required: true
     },
