@@ -2,6 +2,7 @@ const router = require("express").Router();
 const usersController = require("./Controller/user-controller.js");
 const AttendanceController = require("./Controller/attendance-controller");
 const UtilsController = require("./Controller/utils-controller");
+const labLibraryController = require("./Controller/lab-library-controller");
 
 router.post("/api/v1/users/add-student", usersController.studentSignup);
 router.post("/api/v1/users/add-professor",usersController.professorSignup);
@@ -22,5 +23,10 @@ router.post("/api/v1/course/add-class",UtilsController.addClass);
 
 router.post("/api/v1/lab/add-lab-timing",UtilsController.LabActivity);
 router.post("/api/v1/library/add-library-timing",UtilsController.LibraryActivity);
+
+router.get("/api/v1/show/lab-user-to-admin",labLibraryController.showLabUserToAdmin);
+router.get("/api/v1/show/library-user-to-admin",labLibraryController.showLibraryUserToAdmin);
+router.get("/api/v1/show/library-user/:userId", labLibraryController.showLibraryUser);
+router.get("/api/v1/show/lab-user/:userId",labLibraryController.showLabUser);
 
 module.exports = router;

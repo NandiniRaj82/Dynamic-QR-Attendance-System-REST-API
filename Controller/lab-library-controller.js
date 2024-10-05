@@ -86,3 +86,148 @@ exports.checkInOut = async (req, res) => {
         res.status(500).json({ message: "Server error", error });
     }
 };
+
+exports.showLabUserToAdmin = async(req,res) =>{
+    try{
+        const LabRecords = await LabDataModel.find();
+
+        if(!LabRecords || LabRecords.length == 0){
+            return res.status(404).json({message: "No lab data found! "});
+        }
+
+        const response = LabRecords.map(record =>({
+            studentId: record.studentId,
+            labName: record.labName,
+            checkIn: record.checkIn,
+            checkOut: record.checkOut,
+            status: record.status
+        }));
+
+        res.status(200).json({
+            message: "Lab Data",
+            LabRecords : response
+        });
+
+
+    }catch(error){
+        console.error("Error in fetching the data: ",error);
+        res.status(500).json({message: "Server error",error});
+    }
+};
+
+exports.showLibraryUserToAdmin = async(req,res)=>{
+    try{
+        const libraryRecords = await LibraryModel.find();
+
+        if(!libraryRecords || libraryRecords.length == 0){
+            return res.status(404).json({message: "No library data found!"});
+        }
+
+        const response = libraryRecords.map(record =>({
+            studentId: record.studentId,
+            checkIn: record.checkIn,
+            checkOut: record.checkOut,
+            status: record.status
+        }));
+
+        res.status(200).json({
+            message: "Library Data",
+            libraryRecords : response
+        });
+    }catch(error){
+        console.error("Error in fetching the data: ",error);
+        res.status(500).json({message: "Server error",error});
+    }
+};
+
+exports.showLibraryUser = async(req,res)=>{
+    try {
+       
+
+        const {userId} = req.params; 
+
+        let user = await StudentModel.findOne({ studentId: userId });
+
+        if (!user) {
+            user = await ProfessorsModel.findOne({ email: userId });
+        }
+
+        if (!user) {
+            user = await OtherUsersModel.findOne({ email: userId });
+        }
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+
+        const libraryRecords = await LibraryModel.find({ studentId: user.studentId || user.email });
+        
+        if (!libraryRecords || libraryRecords.length === 0) {
+            return res.status(404).json({ message: "No library data found for this user" });
+        }
+
+        const response = libraryRecords.map(record => ({
+            studentId: record.studentId,
+            checkIn: record.checkIn,
+            checkOut: record.checkOut,
+            status: record.status
+        }));
+
+        res.status(200).json({
+            message: "Library data retrieved successfully",
+            libraryRecords: response
+        });
+
+    } catch (error) {
+        console.error("Error fetching library data: ", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
+exports.showLabUser = async(req,res)=>{
+    try {
+       
+
+        const {userId} = req.params; 
+
+        let user = await StudentModel.findOne({ studentId: userId });
+
+        if (!user) {
+            user = await ProfessorsModel.findOne({ email: userId });
+        }
+
+        if (!user) {
+            user = await OtherUsersModel.findOne({ email: userId });
+        }
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+
+        const labRecords = await LabDataModel.find({ studentId: user.studentId || user.email });
+        
+        if (!labRecords || labRecords.length === 0) {
+            return res.status(404).json({ message: "No lab data found for this user" });
+        }
+
+        const response = labRecords.map(record => ({
+            studentId: record.studentId,
+            labName: record.labName,
+            checkIn: record.checkIn,
+            checkOut: record.checkOut,
+            status: record.status
+        }));
+
+        res.status(200).json({
+            message: "Lab data retrieved successfully",
+            labRecords: response
+        });
+
+    } catch (error) {
+        console.error("Error fetching lab data: ", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
