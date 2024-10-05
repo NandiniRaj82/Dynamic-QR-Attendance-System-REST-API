@@ -57,48 +57,47 @@ const qrSessionData = new mongoose.Schema({
 });
 
 const labTiming = new mongoose.Schema({
-    name: {
+    studentId:{
         type: String,
-        required: true
+        required:true
     },
-    studentId: {
+    labName: {
         type: String,
-        required: true,
-        unique: true
+        required: true 
     },
-    checkIn: {
+    checkIn:{
         type: Date,
-        required: true,
-        default:  Date.now()
+        default: Date.now()
     },
-    checkOut: {
-        type: Date,
-        required: false,
-        default:  Date.now()
+    checkOut:{
+        type: Date,   
+    },
+    status: {
+        type: String,
+        enum: ['Checked In', 'Checked Out'],
+        default: 'Checked In'
     },
 });
 
 const libraryTiming = new mongoose.Schema({
-    name: {
+    studentId:{
         type: String,
-        required: true
+        required:true
     },
-    studentId: {
+    checkIn:{
+        type: Date,
+        default: Date.now()
+    },
+    checkOut:{
+        type: Date,   
+    },
+    status: {
         type: String,
-        required: true,
-        unique: true
-    },
-    checkIn: {
-        type: Date,
-        required: true,
-        default:  Date.now()
-    },
-    checkOut: {
-        type: Date,
-        required: false,
-        default:  Date.now()
+        enum: ['Checked In', 'Checked Out'],
+        default: 'Checked In'
     },
 });
+
 
 const CoursesModel=  mongoose.model('Courses', courseSchema);
 const ClassSchedulesModel=  mongoose.model('Class Schedules', classScheduleSchema);
