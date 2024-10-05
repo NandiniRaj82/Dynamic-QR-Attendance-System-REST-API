@@ -1,73 +1,13 @@
-const uuid = require('uuid');
-const axios = require('axios');
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 const {StudentModel,ProfessorsModel, OtherUsersModel} = require("../Models/users-model");
-const {CoursesModel,ClassSchedulesModel , LabDataModel, LibraryModel, QRDataModel} = require("../Models/data-model");
-const {CoursesAttendanceModel} = require("../Models/attendance-model");
 
 
 const generateToken = (user) => {
   const token = jwt.sign({userId: user._id, fullName: user.fullName, email: user.email}, "SWE_SECRET_KEY", { expiresIn: '28d' });
   return token;
-};
-
-exports.generateQRCode = async(req, res) => {
-  try {
-      const { sessionId, classData } = req.body;
-      const uniqueId = uuid.v4();
-
-      const classStartTime = new Date(classData.startTime); 
-      const classDurationInMs = classData.duration * 60 * 1000;  
-      const extraTimeInMs = 15 * 60 * 1000; 
-      const currentTime = new Date();
-
-      const sessionEndTime = new Date(classStartTime.getTime() + classDurationInMs + extraTimeInMs);
-
-      if (currentTime > sessionEndTime) {
-          return res.status(400).send("The class has ended, QR codes can no longer be generated.");
-      }
-
-      let existingSession = await QRDataModel.findOne({ sessionId: sessionId });
-
-      if (existingSession) {
-          existingSession.qrCodeId = uniqueId;
-          await existingSession.save();
-      } else {
-          const qrSessiondata = {
-              qrCodeId: uniqueId,
-              sessionId: sessionId,
-              classData: classData
-          };
-
-          const qrData = new QRDataModel(qrSessiondata);
-          await qrData.save();
-      }
-
-      const QR_Code_Generation_URL = 'http://192.168.6.121:8000/generateQrCode';
-      const postData = {
-          "id": uniqueId,
-          "sessionId": sessionId,
-          "courseId":  classData.courseId,
-          "className": classData.className,
-          "duration": classData.duration,
-          "startTime": classData.startTime,
-          "timestamp": Date.now().toString()
-      };
-
-      const response = await axios.post(QR_Code_Generation_URL, postData, {
-          responseType: 'arraybuffer', 
-      });
-
-      res.set('Content-Type', 'image/png');
-      res.set('Content-Disposition', 'inline; filename="qr.png"');
-      res.send(Buffer.from(response.data, 'binary'));
-
-  } catch (error) {
-      console.error('Error generating QR code:', error.message);
-      res.status(400).send("Error generating QR code: " + error.message);
-  }
 };
 
 exports.studentSignup = async (req, res) => {
@@ -166,42 +106,3 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.addCourse = async(req,res) => {
-  try {
-      const newCourse = new CoursesModel(req.body);
-      await newCourse.save();
-      res.status(201).send("Course Saved successfully!");
-    } catch (error) {
-      res.status(400).send("Error saving course: " + error.message);
-    }
-}
-
-exports.addClass = async(req,res) => {
-  try {
-      const newCourse = new CoursesModel(req.body);
-      await newCourse.save();
-      res.status(201).send("Course Saved successfully!");
-    } catch (error) {
-      res.status(400).send("Error saving course: " + error.message);
-    }
-}
-
-exports.LabActivity = async(req,res) => {
-    try {
-        const newLabTiming = new LabDataModel(req.body);
-        await newLabTiming.save();
-        res.status(201).send("Lab timing recorded successfully!");
-      } catch (error) {
-        res.status(400).send("Error recording lab timing: " + error.message);
-      }
-}
-
-exports.LibraryActivity = async(req,res)=>{
-    try {
-        const newLibraryTiming = new LibraryModel(req.body);
-        await newLibraryTiming.save();
-        res.status(201).send("Library timing recorded successfully!");
-      } catch (error) {
-        res.status(400).send("Error recording library timing: " + error.message);
-      }
-}
