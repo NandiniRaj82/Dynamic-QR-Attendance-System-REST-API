@@ -1,4 +1,5 @@
-const {CoursesModel, LabDataModel, LibraryModel} = require("../Models/data-model");
+const { CoursesAttendanceModel } = require("../Models/attendance-model");
+const {CoursesModel, LabDataModel, LibraryModel, ClassSchedulesModel} = require("../Models/data-model");
 const {StudentModel,ProfessorsModel, OtherUsersModel} = require("../Models/users-model");
 
 
@@ -14,35 +15,181 @@ exports.addCourse = async(req,res) => {
 
 exports.getStudentCourses = async (req, res) => {
     try {
-      const { studentId } = req.body;
-      const student = await StudentModel.findOne({studentId: studentId}).populate({
-        path: 'courses',
-        model: CoursesModel,
-        populate: {
-          path: 'instructedCourses',
-          model: 'ProfessorsModel',
-          select: 'fullName'
+      const { studentId } = req.query; 
+        
+      const student = await StudentModel.findOne({ studentId: studentId });
+      if (!student) {
+          return res.status(404).send("Student not found");
+      }
+
+      const studentCoursesIds = [...student.courses, ...student.additionalCourses];
+
+      const courses = await CoursesModel.find({ courseId: { $in: studentCoursesIds } });
+
+      const courseDetailsWithProfessors = [];
+
+        for (let course of courses) {
+            const professor = await ProfessorsModel.findOne({ instructedCourses: course.courseId }, 'fullName');
+            
+            courseDetailsWithProfessors.push({
+                courseId: course.courseId,
+                courseCode: course.courseCode,
+                courseName: course.courseName,
+                batch: course.batch,
+                professorName: professor ? professor.fullName : "No professor assigned"
+            });
         }
-      }).populate({
-        path: 'additionalCourses',
-        model: CoursesModel,
-        populate: {
-          path: 'instructedCourses',
-          model: 'ProfessorsModel',
-          select: 'fullName'
-        }
+
+      res.status(200).json({
+          studentId: student.studentId,
+          fullName: student.fullName,
+          courses: courseDetailsWithProfessors
       });
 
-      const courses = [...student.courses, ...student.additionalCourses];
-      res.status(200).send(courses);
     } catch (error) {
       res.status(400).send("Error fetching courses: " + error.message);
     }
+}
+
+exports.getCourseDetails = async (req, res) => {
+  try {
+    const { studentId, courseId } = req.query; 
+      
+    const student = await StudentModel.findOne({
+        studentId: studentId,
+        $or: [
+            { courses: courseId },
+            { additionalCourses: courseId }
+        ]
+    });
+
+    if (!student) {
+        return res.status(400).json({ message: "Student not enrolled in this course" });
+    }
+
+    const course = await CoursesModel.findOne({ courseId: courseId });
+    const professor = await ProfessorsModel.findOne({ instructedCourses: course.courseId }, 'fullName');
+    course['professor'] = professor ? professor.fullName : "No professor assigned"
+
+    const allAttendanceWithSchedules = await CoursesAttendanceModel.find({
+      studentId: studentId,
+      courseId: courseId
+    }, 'scheduleId status').populate('scheduleId', 'scheduledDate duration classTopic');
+
+    const formattedAttendance = allAttendanceWithSchedules.map(attendanceItem => ({
+        classSchedule: attendanceItem.scheduleId,
+        status: attendanceItem.status,
+    }));
+
+    res.status(200).json({
+        studentId: student.studentId,
+        fullName: student.fullName,
+        course: course,
+        attendance: formattedAttendance
+    });
+
+  } catch (error) {
+    res.status(400).send("Error fetching courses: " + error.message);
   }
+}
+
+exports.getAllStudentsWithCourse = async (req, res) => {
+  try {
+    const {courseId} = req.query;
+
+    const course = await CoursesModel.findOne({ courseId: courseId });
+
+    const allStudentsRegisteredWithCourse = await StudentModel.find({
+      $or: [
+        { courses: courseId },
+        { additionalCourses: courseId }
+      ]
+    }, 'fullName studentId email mobileNo batchCode');
+
+    const studentsWithAttendances = [];
+
+    for (let student of allStudentsRegisteredWithCourse) {
+
+      const attendance = await CoursesAttendanceModel.find({
+         studentId: student.studentId, 
+         courseId: courseId 
+      }, 'scheduleId status').populate('scheduleId', 'scheduledDate duration classTopic')
+
+      const formattedAttendance = attendance.map(attendanceItem => ({
+        classSchedule: attendanceItem.scheduleId,
+        status: attendanceItem.status,
+      }));
+      
+      studentsWithAttendances.push({
+          studentData: student,
+          attendance: formattedAttendance
+      });
+    }
+
+    res.status(200).json({
+        course: course,
+        students: studentsWithAttendances
+    });
+
+  } catch (error) {
+    res.status(400).send("Error fetching courses: " + error.message);
+  }
+}
+
+exports.getTodaysClasses = async (req, res) => {
+  try {
+      const { studentId } = req.query;
+
+      const student = await StudentModel.findOne({ studentId });
+      if (!student) {
+          return res.status(404).send("Student not found");
+      }
+
+      const studentCoursesIds = [...student.courses, ...student.additionalCourses];
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); 
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+
+      const todaysClasses = await ClassSchedulesModel.find({
+          courseId: { $in: studentCoursesIds },
+          scheduledDate: {$gte: today, $lte: tomorrow}
+      }).populate({
+        path: 'courseId',      
+        model: 'Courses',     
+        localField: 'courseId', 
+        foreignField: 'courseId',
+        select: 'courseCode courseName'
+      });
+
+      const formattedClasses = todaysClasses.map(classItem => ({
+          _id: classItem._id,
+          courseDetails: classItem.courseId,
+          scheduledDate: classItem.scheduledDate,
+          duration: classItem.duration,
+          classTopic: classItem.classTopic,
+      }));
+
+      res.status(200).json({
+          studentId: student.studentId,
+          fullName: student.fullName,
+          classes: formattedClasses
+      });
+
+  } catch (error) {
+      res.status(400).send("Error fetching today's classes: " + error.message);
+  }
+};
+
+
 
 exports.addClass = async(req,res) => {
     try {
-        const newCourse = new CoursesModel(req.body);
+        const {courseId, duration, classTopic} = req.body;
+        const scheduledDate = new Date("2024-10-05T16:30:00.000Z");
+        const newCourse = new ClassSchedulesModel({courseId, duration, classTopic, scheduledDate});
         await newCourse.save();
         res.status(201).send("Course Saved successfully!");
     } catch (error) {

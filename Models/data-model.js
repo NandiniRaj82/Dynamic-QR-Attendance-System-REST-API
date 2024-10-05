@@ -23,7 +23,7 @@ const courseSchema = new mongoose.Schema({
 const classScheduleSchema = new mongoose.Schema({
     courseId: {
         type: Number,
-        ref:  "Course",
+        ref:  "Courses",
         required: true
     },
     scheduledDate: {

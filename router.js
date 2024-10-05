@@ -10,7 +10,12 @@ router.post("/api/v1/users/login",usersController.login);
 
 router.post("/api/v1/generateQRCode",AttendanceController.generateQRCode);
 router.post("/api/v1/students/markAttendance",AttendanceController.markAttendance);
-router.post("/api/v1/students/myCourses",UtilsController.getStudentCourses);
+
+router.get("/api/v1/students/myCourses",UtilsController.getStudentCourses);
+router.get("/api/v1/students/getTodaysClasses",UtilsController.getTodaysClasses);
+router.get("/api/v1/students/getCourseDetails",UtilsController.getCourseDetails);
+
+router.get("/api/v1/professors/getAllStudentsWithCourse",UtilsController.getAllStudentsWithCourse);
 
 router.post("/api/v1/course/add-course",UtilsController.addCourse);
 router.post("/api/v1/course/add-class",UtilsController.addClass);

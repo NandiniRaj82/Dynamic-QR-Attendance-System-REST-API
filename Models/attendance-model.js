@@ -13,7 +13,7 @@ const courseAttendanceSchema = new mongoose.Schema({
     },
     scheduleId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'ClassSchedules',
+        ref: 'Class Schedules',
         required: true
     },
     status: {
