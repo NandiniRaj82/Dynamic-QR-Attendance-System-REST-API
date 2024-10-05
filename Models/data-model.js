@@ -56,6 +56,11 @@ const qrSessionData = new mongoose.Schema({
     }
 });
 
+const labEnum = {
+    values: ['Lab 1', 'Lab 2', 'Lab 3', 'Lab 4'],
+    message: '{VALUE} is not a valid lab'
+};
+
 const labTiming = new mongoose.Schema({
     name: {
         type: String,
@@ -63,20 +68,24 @@ const labTiming = new mongoose.Schema({
     },
     studentId: {
         type: String,
+        required: true
+    },
+    labName: {
+        type: String,
         required: true,
-        unique: true
+        enum: labEnum
     },
     checkIn: {
         type: Date,
         required: true,
-        default:  Date.now()
+        default: Date.now
     },
     checkOut: {
         type: Date,
-        required: false,
-        default:  Date.now()
+        required: false
     },
 });
+
 
 const libraryTiming = new mongoose.Schema({
     name: {
@@ -105,7 +114,7 @@ const ClassSchedulesModel=  mongoose.model('Class Schedules', classScheduleSchem
 const QRDataModel= mongoose.model('QR Session Data', qrSessionData);
 
 const LabDataModel= mongoose.model('Lab Data', labTiming); 
-const LibraryModel= mongoose.model('Library Data', libraryTiming); 
+const LibraryModel= mongoose.model('Library Data', libraryTiming);
 
 module.exports = {
     CoursesModel,
