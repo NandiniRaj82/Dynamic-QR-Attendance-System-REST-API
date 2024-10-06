@@ -91,7 +91,7 @@ exports.generateQRCode = async(req, res) => {
 
         console.log(uniqueId);
   
-        const QR_Code_Generation_URL = 'http://192.168.179.121:8000/generateQrCode';
+        const QR_Code_Generation_URL = 'https://qr-generation.onrender.com/generateQrCode';
         const postData = {
             "id": uniqueId,
             "sessionId": sessionId,
