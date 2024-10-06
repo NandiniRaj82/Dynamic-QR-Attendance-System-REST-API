@@ -3,8 +3,11 @@ const app = express();
 const PORT = 3000;
 const connectDB = require('./Config/db.js');
 const router = require('./router'); 
+const cors = require('cors');
 
 connectDB();
+
+app.use(cors());
 
 app.use(express.json());
 
