@@ -93,6 +93,48 @@ exports.getCourseDetails = async (req, res) => {
   }
 }
 
+exports.getCoursesWithId = async (req,  res) => {
+  try {
+    const allCourses = await CoursesModel.find();
+    return res.status(200).json(allCourses);
+  } catch(error){
+    console.log(error);
+    return res.status(400).json({
+      "status":  "error",
+      "message": "Error fetching courses: " + error.message
+    });
+  }
+}
+
+exports.getInstructedCourses = async (req,  res) => {
+  try {
+    const {email} = req.query;
+    if(!email){
+      return res.status(401).json({
+        message: "Professor Email is Required",
+        courses: []
+      });
+    }
+
+    const professor = await ProfessorsModel.findOne({email});
+    const instructedCourses = professor.instructedCourses;
+
+    const courses = await CoursesModel.find({ courseId: { $in: instructedCourses } });
+
+    return res.status(200).json({
+          professorEmail: email,
+          courses: courses
+      });
+  } catch(error){
+    console.log(error);
+    return res.status(400).json({
+      "status":  "error",
+      "message": "Error fetching courses: " + error.message
+    });
+  }
+}
+
+
 exports.getAllStudentsWithCourse = async (req, res) => {
   try {
     const {courseId} = req.query;
@@ -195,6 +237,16 @@ exports.addClass = async(req,res) => {
     } catch (error) {
         res.status(400).send("Error saving course: " + error.message);
     }
+}
+
+exports.scheduledClasses = async(req,res) => {
+  try {
+    const { courseId } = req.query;
+    const classes = await ClassSchedulesModel.find({ courseId });
+    res.status(200).json({"courseId": courseId, "classes": classes})
+  } catch (error) {
+      res.status(400).send("Error fetching course: " + error.message);
+  }
 }
 
 exports.LabActivity = async(req,res) => {

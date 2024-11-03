@@ -7,11 +7,13 @@ const axios = require('axios');
 
 exports.markAttendance = async (req, res) => {
     try {
-        const { studentId, status,  qrData } = req.body;
-
+        const { studentId, status } = req.body;
+        let {qrData} = req.body;
+        qrData = JSON.parse(qrData);
+        
         const scheduleId = qrData.sessionId;
-        const courseId = qrData.courseId;
         const qrId = qrData.id;
+        console.log(qrData.sessionId);
 
         let qrInstance = await QRDataModel.findOne({ sessionId: qrData.sessionId });
 
@@ -20,7 +22,7 @@ exports.markAttendance = async (req, res) => {
                 return res.status(400).json({ message: "Invalid QR Code. QR Code Expired" });
             }
         } else {
-            return res.status(400).json({ message: "Invalid QR Code. QR Code Expired"});
+            return res.status(400).json({ message: "Invalid QR Code. QR Code Expired."});
         }
 
         const schedule = await ClassSchedulesModel.findById(scheduleId);
@@ -28,11 +30,14 @@ exports.markAttendance = async (req, res) => {
             return res.status(404).json({ message: "Scheduled class not found" });
         }
 
+        console.log(schedule.courseId);
+        const courseId = schedule.courseId;
+
         const student = await StudentModel.findOne({
             studentId: studentId,
             $or: [
-                { courses: courseId },
-                { additionalCourses: courseId }
+                { courses: schedule.courseId },
+                { additionalCourses: schedule.courseId }
             ]
         });
 

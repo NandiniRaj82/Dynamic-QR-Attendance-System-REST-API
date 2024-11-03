@@ -99,7 +99,7 @@ exports.login = async (req, res) => {
     }
 
     const token = generateToken(user);
-    res.status(200).send({ token, message: `${role.charAt(0).toUpperCase() + role.slice(1)} logged in successfully` });
+    res.status(200).send({ token: token, message: `${role.charAt(0).toUpperCase() + role.slice(1)} logged in successfully` });
   } catch (error) {
     console.error('Error logging in:', error.message);
     res.status(500).send({ message: 'Internal server error' });
