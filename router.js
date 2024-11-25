@@ -16,7 +16,7 @@ router.get("/api/v1/students/myCourses", UtilsController.getStudentCourses);
 router.get("/api/v1/students/getTodaysClasses", UtilsController.getTodaysClasses);
 router.get("/api/v1/students/getCourseDetails", UtilsController.getCourseDetails);
 
-router.get("/api/v1/students/getcoursesId", UtilsController.getCoursesWithId); // All Courses
+router.get("/api/v1/students/getcoursesId", UtilsController.getCoursesWithId);
 
 router.get("/api/v1/professors/getAllStudentsWithCourse",UtilsController.getAllStudentsWithCourse);
 router.get("/api/v1/professors/getMyInstructedCourses",UtilsController.getInstructedCourses);

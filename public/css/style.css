@@ -1,19 +1,42 @@
 *{
-    /* margin:0;
-    padding: 0; */
     font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     box-sizing: border-box;
 }
 body{
-    background-image: url(IIIT-Raichur-Transit-Campus.jpg);
+    background-image: url(../images/IIIT-Raichur-Transit-Campus.jpg);
     background-size: cover;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 100%;
     color: rgb(255, 255, 255, 1);
 }
+
+#user-info, #course-selection {
+    display: flex;
+    flex-direction: column;
+}
+
+#course-search {
+    margin: 10px 0;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+#courses-container {
+    margin: 10px 0;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 20px;
+}
+
+
 a{
     color: white;
     text-decoration: none;
@@ -23,9 +46,7 @@ a:hover{
 }
 .logo{
     padding: 10px 20px;
-    /* height: 50px; */
     width: 100%;
-    /* background-size: cover; */
     display: flex;
     flex-direction: column;
     justify-content: flex-start; 
@@ -51,7 +72,7 @@ a:hover{
     border: 2px solid white;
     border-radius: 5px;
     background-color:rgb(107, 155, 179);
-    width: 450px;
+    width: 600px;
     margin: auto;
     padding: 30px 50px;
     display: flex;
@@ -98,7 +119,6 @@ form{
     border-radius: 5px;
     display: flex;
     flex-direction: column;
-    /* justify-content: center; */
     padding: 10px;
     margin: 10px 0px;
     min-height: 60px;
@@ -107,7 +127,6 @@ form{
     font-size: 20px;
 }
 .label input{
-    /* display: none; */
     font-size: 18px;
     font-weight: bold;
 }
@@ -115,6 +134,7 @@ button{
     background-color:rgb(0, 128, 128);
     font-size: 18px;
     padding: 10px;
+    margin: 10px 0;
     border-radius: 5px;
     border: none;
     color: white;

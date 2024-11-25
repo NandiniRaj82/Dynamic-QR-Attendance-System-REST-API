@@ -64,21 +64,37 @@ exports.markAttendance = async (req, res) => {
 
 exports.generateQRCode = async(req, res) => {
     try {
-        const { sessionId, classData } = req.body;
+        const { sessionId } = req.body;
         const uniqueId = uuid.v4();
-  
-        const classStartTime = new Date(classData.startTime); 
-        const classDurationInMs = classData.duration * 60 * 1000;  
-        const extraTimeInMs = 15 * 60 * 1000; 
+
+        const classData = await ClassSchedulesModel.findById(sessionId);
+        if (!classData) {
+            return res.status(404).json({ message: "Scheduled class not found" });
+        }
+
+        const classStartTime = classData.scheduledDate;
         const currentTime = new Date();
   
-        const sessionEndTime = new Date(classStartTime.getTime() + classDurationInMs + extraTimeInMs);
-  
-        if (currentTime > sessionEndTime) {
-            return res.status(400).send("The class has ended, QR codes can no longer be generated.");
+        const classDateString = classStartTime.toISOString().split('T')[0];
+        const currentDateString = currentTime.toISOString().split('T')[0];
+
+        if (classDateString !== currentDateString) {
+            return res.status(400).send("QR codes can only be generated for classes scheduled today.");
         }
   
+        const QR_Code_Generation_URL = 'http://localhost:8000/generateQrCode';
+        const postData = {
+            "id": uniqueId,
+            "sessionId": sessionId,
+            "timestamp": Date.now().toString()
+        };
+  
+        const response = await axios.post(QR_Code_Generation_URL, postData, {
+            responseType: 'arraybuffer', 
+        });
+
         let existingSession = await QRDataModel.findOne({ sessionId: sessionId });
+        console.log(uniqueId);
   
         if (existingSession) {
             existingSession.qrCodeId = uniqueId;
@@ -93,23 +109,6 @@ exports.generateQRCode = async(req, res) => {
             const qrData = new QRDataModel(qrSessiondata);
             await qrData.save();
         }
-
-        console.log(uniqueId);
-  
-        const QR_Code_Generation_URL = 'https://qr-generation.onrender.com/generateQrCode';
-        const postData = {
-            "id": uniqueId,
-            "sessionId": sessionId,
-            "courseId":  classData.courseId,
-            "className": classData.className,
-            "duration": classData.duration,
-            "startTime": classData.startTime,
-            "timestamp": Date.now().toString()
-        };
-  
-        const response = await axios.post(QR_Code_Generation_URL, postData, {
-            responseType: 'arraybuffer', 
-        });
   
         res.set('Content-Type', 'image/png');
         res.set('Content-Disposition', 'inline; filename="qr.png"');

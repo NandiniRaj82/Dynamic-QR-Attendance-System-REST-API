@@ -137,7 +137,7 @@ exports.getInstructedCourses = async (req,  res) => {
 
 exports.getAllStudentsWithCourse = async (req, res) => {
   try {
-    const {courseId} = req.query;
+    const { courseId } = req.query;
 
     const course = await CoursesModel.findOne({ courseId: courseId });
 
@@ -148,35 +148,37 @@ exports.getAllStudentsWithCourse = async (req, res) => {
       ]
     }, 'fullName studentId email mobileNo batchCode');
 
-    const studentsWithAttendances = [];
+    const studentIds = allStudentsRegisteredWithCourse.map(student => student.studentId);
 
-    for (let student of allStudentsRegisteredWithCourse) {
+    const attendanceRecords = await CoursesAttendanceModel.find({
+      studentId: { $in: studentIds },
+      courseId: courseId
+    }, 'studentId scheduleId status').populate('scheduleId', 'scheduledDate duration classTopic');
 
-      const attendance = await CoursesAttendanceModel.find({
-         studentId: student.studentId, 
-         courseId: courseId 
-      }, 'scheduleId status').populate('scheduleId', 'scheduledDate duration classTopic')
-
-      const formattedAttendance = attendance.map(attendanceItem => ({
-        classSchedule: attendanceItem.scheduleId,
-        status: attendanceItem.status,
-      }));
-      
-      studentsWithAttendances.push({
-          studentData: student,
-          attendance: formattedAttendance
+    const attendanceByStudent = attendanceRecords.reduce((acc, record) => {
+      if (!acc[record.studentId]) acc[record.studentId] = [];
+      acc[record.studentId].push({
+        classSchedule: record.scheduleId,
+        status: record.status,
       });
-    }
+      return acc;
+    }, {});
+
+    const studentsWithAttendances = allStudentsRegisteredWithCourse.map(student => ({
+      studentData: student,
+      attendance: attendanceByStudent[student.studentId] || []
+    }));
 
     res.status(200).json({
-        course: course,
-        students: studentsWithAttendances
+      course: course,
+      students: studentsWithAttendances
     });
 
   } catch (error) {
     res.status(400).send("Error fetching courses: " + error.message);
   }
-}
+};
+
 
 exports.getTodaysClasses = async (req, res) => {
   try {
@@ -229,8 +231,8 @@ exports.getTodaysClasses = async (req, res) => {
 
 exports.addClass = async(req,res) => {
     try {
-        const {courseId, duration, classTopic} = req.body;
-        const scheduledDate = new Date("2024-10-05T16:30:00.000Z");
+        const {courseId, duration, classTopic, scheduledDateTime} = req.body;
+        const scheduledDate = new Date(scheduledDateTime);
         const newCourse = new ClassSchedulesModel({courseId, duration, classTopic, scheduledDate});
         await newCourse.save();
         res.status(201).send("Course Saved successfully!");
