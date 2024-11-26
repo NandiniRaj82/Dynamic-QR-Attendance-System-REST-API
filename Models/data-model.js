@@ -53,6 +53,12 @@ const qrSessionData = new mongoose.Schema({
     },
     classData: {
         type: mongoose.Schema.Types.Mixed
+    },
+    latitude: {
+        type: Number,
+    },
+    longitude: {
+        type: Number,
     }
 });
 

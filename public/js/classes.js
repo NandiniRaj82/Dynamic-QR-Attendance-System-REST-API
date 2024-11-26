@@ -91,7 +91,7 @@ function startGeneratingQRCode(sessionID, API, className, duration, scheduledDat
     generateQRCode(sessionID, API);
     qrCodeInterval = setInterval(() => {
         generateQRCode(sessionID, API);
-    }, 5000);
+    }, 10000);
 
     document.getElementById("stopButton").style.display = "inline-block";
 }
@@ -103,9 +103,45 @@ function stopGeneratingQRCode() {
 }
 
 async function generateQRCode(sessionID, API) {
+    async function getCurrentLocation() {
+        if (!navigator.geolocation) {
+            throw new Error("Geolocation is not supported by this browser.");
+        }
+
+        // Check geolocation permission
+        const permissionStatus = await navigator.permissions.query({ name: "geolocation" });
+
+        if (permissionStatus.state === "denied") {
+            throw new Error("Location access denied. Please enable location permissions in your browser.");
+        }
+
+        // Get current location
+        return new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    resolve({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    });
+                },
+                (error) => {
+                    const errorMessages = {
+                        1: "Permission denied. Please enable location services.",
+                        2: "Position unavailable. Please check your device.",
+                        3: "Timeout. Unable to fetch location."
+                    };
+                    reject(new Error(errorMessages[error.code] || "Unknown location error."));
+                },
+                { timeout: 10000 } // Set a timeout for location fetching
+            );
+        });
+    }
+
     const requestData = { "sessionId": sessionID };
 
     try {
+        requestData.location = await getCurrentLocation();
+
         const response = await fetch(API, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -124,10 +160,31 @@ async function generateQRCode(sessionID, API) {
             qrImage.style.opacity = 1;
         }, 500);
     } catch (error) {
-        console.log("Error generating QR code: " + error.message);
-        alert("Error: " +  error.message);
+        console.error("Error generating QR code:", error.message);
+        alert("Error: " + error.message);
     }
 }
+
+
+// function getCurrentLocation() {
+//     return new Promise((resolve, reject) => {
+//         if (navigator.geolocation) {
+//             navigator.geolocation.getCurrentPosition(
+//                 (position) => {
+//                     resolve({
+//                         latitude: position.coords.latitude,
+//                         longitude: position.coords.longitude
+//                     });
+//                 },
+//                 (error) => {
+//                     reject(error);
+//                 }
+//             );
+//         } else {
+//             reject(new Error("Geolocation is not supported by this browser."));
+//         }
+//     });
+// }
 
 function openAddClassModal() {
     document.getElementById("addClassModal").style.display = "flex";

@@ -20,6 +20,7 @@ router.get("/api/v1/students/getcoursesId", UtilsController.getCoursesWithId);
 
 router.get("/api/v1/professors/getAllStudentsWithCourse",UtilsController.getAllStudentsWithCourse);
 router.get("/api/v1/professors/getMyInstructedCourses",UtilsController.getInstructedCourses);
+router.post("/api/v1/professors/markAttendance",AttendanceController.manualAttendance);
 
 
 router.post("/api/v1/course/add-course",UtilsController.addCourse);

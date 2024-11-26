@@ -161,7 +161,7 @@ async function fetchAndDisplayStudentData(courseId) {
                                     </div>
                                 </div>
                                 <div class="attendance-records">
-                                    ${studentObj.attendance.map(att => `
+                                    ${studentObj.attendance.map((att, attIndex) => `
                                         <div class="record-item ${att.status.toLowerCase()}">
                                             <span class="record-date">
                                                 ${new Date(att.classSchedule.scheduledDate).toLocaleDateString('en-US', {
@@ -173,6 +173,7 @@ async function fetchAndDisplayStudentData(courseId) {
                                             <span class="record-duration">${att.classSchedule.duration} mins</span>
                                             <span class="record-status ${att.status.toLowerCase()}">
                                                 ${att.status}
+                                                <i class="fa-solid fa-pen edit-icon" data-index="${attIndex}" class-id="${att.classSchedule._id}" data-student-id="${student.studentId}"></i>
                                             </span>
                                         </div>
                                     `).join('')}
@@ -180,6 +181,7 @@ async function fetchAndDisplayStudentData(courseId) {
                             </div>
                         </td>
                     `;
+
                 } else {
                     detailsRow.style.display = 'none';
                 }
@@ -221,6 +223,64 @@ function populateCourseInfo(course) {
     // Insert the course information into the div
     classInfoDiv.innerHTML = courseInfoHTML;
 }
+
+document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('edit-icon')) {
+        const classId = event.target.getAttribute('class-id');
+        const studentId = event.target.getAttribute('data-student-id');
+        const recordItem = event.target.closest('.record-item');
+
+        // Remove any existing editor to avoid multiple dropdowns
+        const existingEditor = document.querySelector('.attendance-editor');
+        if (existingEditor) existingEditor.remove();
+
+        // Create a dropdown editor
+        const editor = document.createElement('div');
+        editor.className = 'attendance-editor';
+        editor.innerHTML = `
+            <select class="status-dropdown">
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+            </select>
+            <button class="submit-edit">OK</button>
+        `;
+
+        recordItem.appendChild(editor);
+
+        // Handle the submission
+        const submitButton = editor.querySelector('.submit-edit');
+        submitButton.addEventListener('click', async function () {
+            const selectedStatus = editor.querySelector('.status-dropdown').value;
+
+            // Call the API to update attendance
+            try {
+                const response = await fetch('/api/v1/professors/markAttendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studentId: studentId,
+                        classId: classId,
+                        status: selectedStatus,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+
+                const statusSpan = recordItem.querySelector('.record-status');
+                statusSpan.textContent = selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1);
+                statusSpan.className = `record-status ${selectedStatus.toLowerCase()}`;
+                
+                editor.remove(); 
+            } catch (error) {
+                console.error('Error updating attendance:', error);
+                alert('Failed to update attendance. Please try again.');
+            }
+        });
+    }
+});
+
 
 const courseId = getCourseIdFromURL();
 const timetableAnchor = document.getElementById("timetableAnchor");
