@@ -120,7 +120,7 @@ exports.generateQRCode = async(req, res) => {
             return res.status(400).send("QR codes can only be generated for classes scheduled today.");
         } 
 
-        const QR_Code_Generation_URL = 'http://localhost:8000/generateQrCode';
+        const QR_Code_Generation_URL = 'https://qr-generation.onrender.com/generateQrCode';
         const postData = {
             "id": uniqueId,
             "sessionId": sessionId,
@@ -145,6 +145,16 @@ exports.generateQRCode = async(req, res) => {
                 latitude: location.latitude,
                 longitude: location.longitude
             };
+
+            const courseId = classData.courseId;
+            const allStudentsRegisteredWithCourse = await StudentModel.find({
+                $or: [
+                  { courses: courseId },
+                  { additionalCourses: courseId }
+                ]
+              }, 'fullName studentId email mobileNo batchCode');
+          
+              const studentIds = allStudentsRegisteredWithCourse.map(student => student.studentId);
   
             const qrData = new QRDataModel(qrSessiondata);
             await qrData.save();
